@@ -10,8 +10,6 @@ private:
     //ofImage maskedImage;
     float circleADD[32*24];
     int circleImageData[640*480];
-    //vector<int> circleImageData, circleADD;
-    //char distanceBuffer[100];
 public:
     
     void setup();
@@ -27,11 +25,15 @@ public:
     void windowResized(int w, int h);
     
     ofImage scenery;
-    ofPoint p[2];
-    ofPoint preP[2];
+    ofPoint p[2],preP[2];
     float acc[2];
-    int mode;
+    int mode,disappearTime[2];
     float  circleY[2];
-    bool ballappear;
+    bool ballappear[2], ballthrown;
+    ofSpherePrimitive suisyou[2];
+    ofLight light;
+    float Xvelocity, Yvelocity;
+    float XoriginalPosition, YoriginalPosition;
+    int time;
 };
 
