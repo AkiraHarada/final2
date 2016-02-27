@@ -28,14 +28,20 @@ void ofApp::setup() {
     
     kinect.getDepthGenerator().GetAlternativeViewPointCap().SetViewPoint(kinect.getImageGenerator());
     
+    //    soundplay.loadSound("からくりピエロ.mp3");
+    //    soundplay.setLoop(true);
+    //    soundplay.play();
+    
     ballappear = false;
     ballthrown = false;
     throwntime = 0;
     appeartime = 0;
     falsetime = 0;
+    floatingtime = 0;
     noiseball = ofRandom(1);
     noiseheart = 0.1;
     kinect.start();
+    
     
     //解決しないといけないこと
     //1 ballappearにしようとするときに誤って飛んでいってしまうのを修正　→ ballappearによって出てきてから一定時間は投げられないように調整
@@ -51,6 +57,9 @@ void ofApp::update(){
     
     kinect.update();
     scenery.loadImage("stage.jpg");
+    if(falsetime > 3){
+        ofExit();
+    }
     
     //ここからは体の描写
     
@@ -82,7 +91,6 @@ void ofApp::update(){
     }
     
     //ここからはボールの描写
-    
     if(kinect.getNumTrackedHands() > 0){
         ofxOpenNIHand hand = kinect.getTrackedHand(0);
         p = hand.getPosition();
@@ -92,26 +100,40 @@ void ofApp::update(){
                 ballappear = true;
             } else if((p.y-preP.y) > 60){
                 ballappear = false;
+                floatingtime = 0;
             }
         }
         acc = newacc;
         if(ballappear == true){
-            if((p.x - preP.x) > 40 || (p.x - preP.x) < -40){
+            if((p.x - preP.x) > 30 || (p.x - preP.x) < -30){
                 if(ballthrown == false && appeartime > 30){
                     ballthrown = true;//ボールを投げるスイッチを入れる(横方向への速度の絶対値が一定値以上のとき)
                     Xvelocity = (p.x - preP.x)/6;//その時の初速度を手の初速度として代入
-                    Yvelocity = -12;
+                    Yvelocity = -16;
                     XoriginalPosition = p.x;//円の中心はそのときの手の位置
                     YoriginalPosition = p.y;
+                    floatingtime = 0;
                 }
             }
         }
         preP = p; //直前の手の速さを保存
     }
     
-    //ballthrownがtrueで投げられてから20フレーム以上経った時手が近くにあればボールを受け取る
-    if((ballthrown == true) && throwntime > 15 ){
-        if(ofDist(circleX, circleY, p.x, p.y) < 60){
+    //ボールを浮かせるためのコード
+    if(ballappear == true){
+        if((p.x - preP.x < 10) && (p.x - preP.x > -10)){
+            floatingtime++;
+            if(floatingtime == 60){
+                floatingX = p.x;
+                floatingY = p.y;
+            }
+        }
+    }
+    
+    //ballthrownがtrueで投げられてから10フレーム以上経った時手が近くにあればボールを受け取る
+    if((ballthrown == true) && throwntime > 10 ){
+        //        cout << "dist:" << ofDist(circleX, circleY, p.x, p.y) << endl;
+        if(ofDist(circleX, circleY, p.x, p.y) < 100){
             ballthrown = false;
             throwntime = 0;
             falsetime = 0;
@@ -132,14 +154,19 @@ void ofApp::update(){
     //ボールが画面上に存在するときはballthrownの挙動によって描画変化
     if(ballappear == true){
         if(ballthrown == false){
-            suisyou.set(30, 10);
-            suisyou.setPosition(p.x, p.y-(40*ofNoise(noiseball)), 0);
-            appeartime = appeartime + 1;
+            if(floatingtime < 60){
+                suisyou.set(30, 10);
+                suisyou.setPosition(p.x, p.y-(40*ofNoise(noiseball)), 0);
+                appeartime = appeartime + 1;
+            } else { //以下は浮かせるときの挙動
+                suisyou.set(30,10);
+                suisyou.setPosition(floatingX, floatingY-(40*ofNoise(noiseball)), 0);
+            }
         } else if(ballthrown == true){
             suisyou.set(30, 10);
-            suisyou.setPosition((XoriginalPosition+Xvelocity*throwntime), (YoriginalPosition+Yvelocity*throwntime+0.14*throwntime*throwntime), 0);
+            suisyou.setPosition((XoriginalPosition+Xvelocity*throwntime), (YoriginalPosition+Yvelocity*throwntime+0.20*throwntime*throwntime), 0);
             circleX = XoriginalPosition+Xvelocity*throwntime;
-            circleY = YoriginalPosition+Yvelocity*throwntime+0.14*throwntime*throwntime;
+            circleY = YoriginalPosition+Yvelocity*throwntime+0.20*throwntime*throwntime;
             throwntime = throwntime + 1;
         }
     }
@@ -181,13 +208,15 @@ void ofApp::draw(){
         }
     }
     
-//    ofColor colorHsb = ofColor::fromHsb(255, 255, 15+80*(3-falsetime), 255*falsetime/3);
-//    ofSetColor(colorHsb);
-//    ofCircle(320, 240, ofNoise(noiseball)*70);
+    //    ofColor colorHsb = ofColor::fromHsb(255, 255, 15+80*(3-falsetime), 255*falsetime/3);
+    //    ofSetColor(colorHsb);
+    //    ofCircle(320, 240, ofNoise(noiseball)*70);
     
     //ボールの描画
     ofEnableDepthTest();
     if(ballappear == true){
+        //        ofSetColor(255, 255 ,255);
+        //        ofCircle(p.x, p.y, 100);
         ofSetColor(0, 255, 255);
         suisyou.draw();
     }
@@ -199,7 +228,7 @@ void ofApp::draw(){
     ofSetColor(colorHsb);
     
     ofPushMatrix();
-    ofTranslate(ofGetWidth()/2+50, ofGetHeight()/2+50);
+    ofTranslate(ofGetWidth()/2, ofGetHeight()/2+50);
     ofBeginShape();
     for (int theta = 0; theta < 360; theta++) {
         float x = R * (16 * sin(ofDegToRad(theta)) * sin(ofDegToRad(theta)) * sin(ofDegToRad(theta)));
@@ -209,12 +238,12 @@ void ofApp::draw(){
         ofVertex(x, y);
     }
     ofEndShape();
-
 }
 
 
 //--------------------------------------------------------------
 void ofApp::exit(){
+    
 }
 
 //--------------------------------------------------------------

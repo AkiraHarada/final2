@@ -36,13 +36,15 @@ public:
     ofPoint p,preP;
     ofLight light;
     ofSpherePrimitive suisyou;
-    int throwntime, appeartime, falsetime;
+    ofSoundPlayer soundplay;
+    int throwntime, appeartime, falsetime, floatingtime;
     float R;
     float acc;
     float Xvelocity, Yvelocity;
     float XoriginalPosition, YoriginalPosition;
     float circleX, circleY;
     float noiseball, noiseheart;
+    float floatingX, floatingY;
     bool ballappear, ballthrown;
 };
 
