@@ -6,10 +6,11 @@ class ofApp : public ofBaseApp{
     
     //ofxOpenNI
 private:
+    
     ofxOpenNI kinect;
-    //ofImage maskedImage;
     float circleADD[32*24];
     int circleImageData[640*480];
+    
 public:
     
     void setup();
@@ -24,16 +25,24 @@ public:
     void mouseReleased(int x, int y, int button);
     void windowResized(int w, int h);
     
+    //ofPoint p[2],preP[2];
+    //float acc[2], newacc[2];
+    //float  circleY[2];
+    //bool ballappear[2], ballthrown;
+    //ofSpherePrimitive suisyou[2];
+    //int HandThrowNumber, HandAppearNumber;
+    
     ofImage scenery;
-    ofPoint p[2],preP[2];
-    float acc[2];
-    int mode,disappearTime[2];
-    float  circleY[2];
-    bool ballappear[2], ballthrown;
-    ofSpherePrimitive suisyou[2];
+    ofPoint p,preP;
     ofLight light;
+    ofSpherePrimitive suisyou;
+    int throwntime, appeartime, falsetime;
+    float R;
+    float acc;
     float Xvelocity, Yvelocity;
     float XoriginalPosition, YoriginalPosition;
-    int time;
+    float circleX, circleY;
+    float noiseball, noiseheart;
+    bool ballappear, ballthrown;
 };
 
